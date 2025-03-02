@@ -1,0 +1,906 @@
+/* Prevent body scrolling */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  position: fixed;
+  width: 100%;
+}
+
+/* Base styles */
+.sheet-app {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  background-color: #fff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Cell focus styles */
+.cell:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+  z-index: 5;
+}
+
+.cell {
+  position: relative;
+  outline: none;
+}
+
+/* Toolbar styles */
+.toolbar {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  background-color: #f3f4f6;
+  min-height: 36px;
+  border-radius: 50px;
+  margin: 8px;
+}
+
+/* Save/Load button container */
+.toolbar > div:first-child {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-btn {
+  padding: 4px;
+  border-radius: 4px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  min-width: 24px;
+  height: 24px;
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.toolbar-btn:active {
+  background-color: #d1d5db;
+}
+
+/* Save and Load buttons */
+.toolbar-btn svg {
+  margin-right: 2px;
+}
+
+.toolbar-btn.px-3 {
+  padding-left: 12px;
+  padding-right: 12px;
+  background-color: #f3f4f6;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.toolbar-btn.px-3:hover {
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.toolbar-btn.px-3:active {
+  background-color: #d1d5db;
+  border-color: #9ca3af;
+}
+
+.toolbar-select {
+  padding: 2px 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background-color: white;
+  cursor: pointer;
+  font-size: 13px;
+  height: 24px;
+  outline: none;
+}
+
+.toolbar-select:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.toolbar-select:focus {
+  border-color: #3b82f6;
+}
+
+.toolbar-input {
+  padding: 2px 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 13px;
+  height: 24px;
+  outline: none;
+  width: 2rem;
+  text-align: center
+}
+
+.toolbar-input:focus {
+  border-color: #3b82f6;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background-color: #e2e8f0;
+  margin: 0 4px;
+}
+
+/* Formula bar styles */
+.formula-bar {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background-color: #fff;
+  width: 100%;
+}
+
+.formula-bar input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  width: 100%;
+}
+
+.formula-input {
+  width: 17%;
+  margin-right: 1rem;
+}
+
+/* Spreadsheet styles */
+.spreadsheet-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  position: relative;
+  user-select: none;
+  min-height: 0; /* This is important for Firefox */
+}
+
+.spreadsheet {
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 100%;
+}
+
+.spreadsheet th {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-weight: 500;
+  text-align: center;
+  user-select: none;
+  position: sticky;
+  z-index: 10;
+  overflow: visible !important;
+  white-space: nowrap;
+}
+
+.spreadsheet th:first-child {
+  z-index: 20;
+}
+
+.spreadsheet td {
+  position: relative;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  height: 24px;
+  min-width: 50px;
+  max-width: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spreadsheet td.selected {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.spreadsheet td.selected.primary {
+  outline: 2px solid #3b82f6;
+  z-index: 1;
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.spreadsheet td input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0 4px;
+  font-size: inherit;
+  font-family: inherit;
+  outline: none;
+  background: transparent;
+}
+
+.spreadsheet td .cell-display {
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Resize handle */
+.resize-handle {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 8px;
+  height: 8px;
+  background-color: #3b82f6;
+  cursor: nwse-resize;
+  z-index: 2;
+  border-radius: 50%;
+}
+
+/* Column resize handle */
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 100;
+  background: transparent;
+  transform: translateX(50%);
+}
+
+.col-resize-handle:hover {
+  background: rgba(0, 120, 212, 0.5);
+}
+
+body.resizing .col-resize-handle {
+  background: #0078d4;
+}
+
+/* Make sure headers don't clip resize handles */
+.spreadsheet th {
+  position: relative;
+  overflow: visible !important;
+}
+
+/* Ensure column headers maintain background during resize */
+.spreadsheet thead th {
+  background-color: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-width: 50px;
+  max-width: none;
+}
+
+/* Prevent text selection during resize */
+.spreadsheet th,
+.spreadsheet td {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Row resize handle */
+.row-resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  cursor: row-resize;
+  z-index: 100;
+  background: transparent;
+  transform: translateY(50%);
+}
+
+.row-resize-handle:hover {
+  background: rgba(0, 120, 212, 0.5);
+}
+
+body.resizing .row-resize-handle {
+  background: #0078d4;
+  height: 2px;
+  bottom: -1px;
+}
+
+/* Resize state styles */
+body.resizing {
+  cursor: col-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Resize reference lines */
+.resize-reference-line {
+  position: fixed;
+  background-color: #0078d4;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.resize-reference-line.column {
+  width: 2px;
+  height: 100vh;
+  top: 0;
+  transform: translateX(-1px);
+}
+
+.resize-reference-line.row {
+  width: 100vw;
+  height: 2px;
+  left: 0;
+  transform: translateY(-1px);
+}
+
+body.resizing.row {
+  cursor: row-resize !important;
+}
+
+body.resizing * {
+  cursor: inherit !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Drag and drop styles */
+.cell-dragging {
+  opacity: 0.7;
+  background-color: #e2e8f0;
+}
+
+.cell-drag-over {
+  background-color: #f1f5f9;
+}
+
+/* Selection styles */
+.selection-area {
+  position: absolute;
+  border: 2px solid #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Header styles */
+.spreadsheet thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f8fafc;
+  z-index: 20;
+}
+
+.spreadsheet tbody th {
+  position: sticky;
+  left: 0;
+  background-color: #f8fafc;
+  z-index: 10;
+}
+
+.spreadsheet thead th:first-child {
+  z-index: 30;
+}
+
+/* Fill handle and autofill styles */
+.autofill-cover {
+  position: absolute;
+  cursor: crosshair;
+  width: 8px;
+  height: 8px;
+  z-index: 9;
+  background-color: transparent;
+}
+
+.fill-handle {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background-color: #3b82f6;
+  border: 1px solid white;
+  cursor: crosshair;
+  z-index: 8;
+}
+
+.cell-reference {
+  max-width: 10%;
+}
+
+.context-menu {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 4px 0;
+  min-width: 200px;
+  z-index: 1000;
+  font-size: 13px;
+  user-select: none;
+}
+
+.context-menu-group {
+  padding: 4px 0;
+}
+
+.context-menu-item {
+  padding: 6px 12px;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #000000;
+  font-size: inherit;
+  white-space: nowrap;
+}
+
+.context-menu-item:hover {
+  background-color: #0078d4;
+  color: white;
+}
+
+.context-menu-item:hover svg {
+  stroke: white;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: #d1d5db;
+  margin: 4px 0;
+}
+
+.context-menu-item svg {
+  stroke: #666;
+  flex-shrink: 0;
+}
+
+/* Make sure the reference lines extend across the entire viewport */
+.spreadsheet-container {
+  position: relative;
+  overflow: auto;
+}
+
+/* Ensure the resize handles are visible */
+.row-resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  cursor: row-resize;
+  z-index: 100;
+  background: transparent;
+  transform: translateY(50%);
+}
+
+.row-resize-handle:hover {
+  background: rgba(0, 120, 212, 0.5);
+}
+
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 100;
+  background: transparent;
+  transform: translateX(50%);
+}
+
+.col-resize-handle:hover {
+  background: rgba(0, 120, 212, 0.5);
+}
+
+/* Flex styles for alignment buttons */
+.align-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  align-items: center;
+}
+
+.align-btns .toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* Function Tester Styles */
+.function-tester {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  max-width: 90vw;
+  z-index: 1000;
+}
+
+.tester-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tester-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0 4px;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+.tester-content {
+  padding: 16px;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.input-group select,
+.input-group textarea {
+  width: 90%;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.input-group select:focus,
+.input-group textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.input-help {
+  font-size: 12px;
+  color: #666;
+  margin: 4px 0;
+}
+
+.test-btn {
+  width: 100%;
+  padding: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.test-btn:disabled {
+  background-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+.test-btn:not(:disabled):hover {
+  background-color: #2563eb;
+}
+
+.result-section {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f8fafc;
+  border-radius: 4px;
+}
+
+.result-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.result {
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 13px;
+  padding: 8px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 13px;
+  padding: 8px;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 4px;
+}
+
+.grid-container {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.spreadsheet-grid {
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 100%;
+  background: white;
+}
+
+.spreadsheet-grid th,
+.spreadsheet-grid td {
+  border: 1px solid #e2e8f0;
+  padding: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+}
+
+.corner-header {
+  width: 40px;
+  background-color: #f8fafc;
+  z-index: 3;
+  position: sticky;
+  top: 0;
+  left: 0;
+}
+
+.column-header {
+  height: 24px;
+  min-width: 100px;
+  background-color: #f8fafc;
+  text-align: center;
+  font-weight: normal;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.row-header {
+  width: 40px;
+  background-color: #f8fafc;
+  text-align: center;
+  font-weight: normal;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.cell {
+  min-width: 100px;
+  height: 24px;
+  padding: 0 4px;
+  outline: none;
+  position: relative;
+}
+
+.selected-cell {
+  background-color: rgba(66, 153, 225, 0.1);
+}
+
+.primary-selected {
+  border: 2px solid #4299e1 !important;
+  z-index: 1;
+}
+
+.fill-handle {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 8px;
+  height: 8px;
+  background: #4299e1;
+  border: 1px solid white;
+  cursor: crosshair;
+  z-index: 2;
+}
+
+.autofill-cover {
+  position: absolute;
+  background: rgba(66, 153, 225, 0.1);
+  border: 1px dashed #4299e1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Context Menu Styles */
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 160px;
+}
+
+.context-menu-group {
+  padding: 4px 0;
+}
+
+.context-menu-separator {
+  border-top: 1px solid #e2e8f0;
+  margin: 4px 0;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.context-menu-item:hover {
+  background-color: #f8fafc;
+}
+
+.context-menu-item svg {
+  opacity: 0.6;
+}
+
+/* Function Tester Styles */
+.function-tester {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 400px;
+  max-width: 90vw;
+  z-index: 1000;
+}
+
+.tester-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tester-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.6;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.input-help {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.input-group select,
+.input-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.test-btn {
+  width: 100%;
+  padding: 8px;
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.test-btn:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.result-section {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f8fafc;
+  border-radius: 4px;
+}
+
+.result-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 14px;
+}
+
+.result {
+  font-family: monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
