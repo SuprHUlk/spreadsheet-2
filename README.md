@@ -1,6 +1,45 @@
 # Sheets Clone
 
-A powerful spreadsheet application built with React that closely mimics Google Sheets functionality.
+A powerful spreadsheet application built with React and TypeScript that closely mimics Google Sheets functionality.
+
+## Features
+
+### Core Spreadsheet Features
+- **Grid System**: Dynamic grid with resizable rows and columns
+- **Cell Selection**: Single cell and range selection support
+- **Cell Editing**: Direct cell editing with formula support
+- **Keyboard Navigation**: Tab, Shift+Tab, and Enter key navigation
+- **Drag and Fill**: Drag to fill cells with patterns or series
+
+### Formula Engine
+- **Mathematical Functions**:
+  - `SUM`: Calculate total of cell range
+  - `AVERAGE`: Calculate average of cell range
+  - `MAX`: Find maximum value in range
+  - `MIN`: Find minimum value in range
+  - `COUNT`: Count numeric values in range
+
+- **Data Quality Functions**:
+  - `TRIM`: Remove leading/trailing whitespace
+  - `UPPER`: Convert text to uppercase
+  - `LOWER`: Convert text to lowercase
+  - `REMOVE_DUPLICATES`: Remove duplicate values
+  - `FIND_AND_REPLACE`: Search and replace text
+
+### Formatting Options
+- Font family selection
+- Font size adjustment
+- Text color customization
+- Bold, italic, and strikethrough
+- Text alignment (left, center, right)
+- Cell styles and formatting
+
+### Advanced Features
+- **Function Tester**: Test formulas with sample data
+- **Context Menu**: Right-click menu for cell operations
+- **Multi-cell Operations**: Copy, paste, and fill
+- **Grid Management**: Add/remove rows and columns
+- **Sticky Headers**: Fixed row and column headers
 
 ## Getting Started
 
@@ -34,126 +73,66 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 npm run build
 ```
 
-## Usage
+## Usage Guide
 
-- **Cell Navigation**: Use Tab/Shift+Tab to move between cells
-- **Editing**: Double-click a cell or press any key when a cell is selected to edit
-- **Formulas**: Start with "=" followed by a function name (e.g., =SUM(A1:A5))
-- **Formatting**: Use the toolbar to change font, size, color, and alignment
-- **Testing Functions**: Click the "Test" button to try out functions with sample data
+### Basic Operations
+- Click a cell to select it
+- Double-click or press any key to edit
+- Drag the cell border to select multiple cells
+- Use the fill handle (bottom-right corner) to auto-fill cells
+
+### Formula Entry
+1. Select a cell
+2. Type '=' to start a formula
+3. Enter function name (e.g., =SUM)
+4. Specify cell range (e.g., =SUM(A1:A5))
+
+### Keyboard Shortcuts
+- **Tab**: Move to next cell
+- **Shift + Tab**: Move to previous cell
+- **Enter**: Move down one cell
+- **Arrow Keys**: Navigate cells
+- **F2 or Double-click**: Edit cell
+
+### Cell Formatting
+1. Select cell(s)
+2. Use toolbar buttons for:
+   - Font style
+   - Text size
+   - Color
+   - Alignment
+   - Bold/Italic/Strikethrough
 
 ## Tech Stack
 
-### Frontend Framework
-- **React**: Chosen for its efficient virtual DOM rendering and component-based architecture, which is crucial for handling large spreadsheet data with minimal performance impact.
-- **TailwindCSS**: Provides utility-first CSS for rapid UI development and consistent styling.
+- **React**: Frontend framework
+- **TypeScript**: Type safety and better development experience
+- **CSS**: Custom styling with modern CSS features
 
-### Data Structures
+## Project Structure
 
-1. **Cell Data Management**
-```javascript
-{
-  "A1": "value",
-  "B2": "=SUM(A1:A5)"
-}
 ```
-- Uses an object-based structure for O(1) cell access
-- Keys are cell references (e.g., "A1")
-- Values store raw input including formulas
-
-2. **Cell Styles**
-```javascript
-{
-  "A1": {
-    fontWeight: "bold",
-    fontSize: "14px",
-    color: "#000000"
-  }
-}
+src/
+├── components/
+│   ├── Cell.tsx
+│   ├── ContextMenu.tsx
+│   ├── FormulaBar.tsx
+│   ├── FunctionTester.tsx
+│   └── Toolbar.tsx
+├── types.ts
+├── SheetApp.tsx
+└── SheetApp.css
 ```
-- Separate object for style management
-- Efficient updates without affecting cell data
 
-3. **Selection Management**
-```javascript
-{
-  startRow: 0,
-  endRow: 2,
-  startCol: 0,
-  endCol: 1
-}
-```
-- Tracks current selection range
-- Enables efficient range operations
+## Contributing
 
-### Key Features
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-1. **Formula Engine**
-- Supports mathematical functions: SUM, AVERAGE, MAX, MIN, COUNT
-- Data quality functions: TRIM, UPPER, LOWER, REMOVE_DUPLICATES, FIND_AND_REPLACE
-- Cell reference parsing and evaluation
-- Circular dependency detection
+## License
 
-2. **UI Components**
-- Toolbar with formatting options
-- Formula bar with cell reference
-- Context menu for row/column operations
-- Function tester for validation
-- Excel-like grid with resizable columns/rows
-
-3. **Data Import/Export**
-- Excel file import/export support
-- Preserves formatting and formulas
-- Handles multiple sheets
-
-### Performance Optimizations
-
-1. **Virtual Rendering**
-- Only renders visible cells
-- Efficient scroll handling
-- Reduced memory usage
-
-2. **Memoization**
-- Caches formula results
-- Prevents unnecessary recalculations
-- Uses React.memo for complex components
-
-3. **Batch Updates**
-- Groups cell updates
-- Minimizes re-renders
-- Efficient state management
-
-### Security Measures
-
-1. **Formula Validation**
-- Sanitizes formula inputs
-- Prevents code injection
-- Validates cell references
-
-2. **Data Sanitization**
-- Cleanses imported data
-- Validates file types
-- Handles malformed input
-
-3. **Error Handling**
-- Graceful error recovery
-- User-friendly error messages
-- Logging and monitoring
-
-### Non-functional Requirements
-
-1. **Accessibility**
-- ARIA labels
-- Keyboard navigation
-- Screen reader support
-
-2. **Responsive Design**
-- Mobile-friendly layout
-- Touch support
-- Adaptive UI
-
-3. **Browser Compatibility**
-- Works across modern browsers
-- Fallback support
-- Progressive enhancement
+This project is licensed under the MIT License - see the LICENSE file for details.
 
