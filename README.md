@@ -53,7 +53,7 @@ A powerful spreadsheet application built with React and TypeScript that closely 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/SuprHUlk/spreadsheet.git
+git clone https://github.com/SuprHUlk/spreadsheet-2.git
 cd spreadsheet
 ```
 
