@@ -1,15 +1,22 @@
-import React, { useRef, useEffect, useState, ChangeEvent } from 'react';
-import { FormulaBarProps } from '../types';
+import React, { useRef, useEffect, useState } from "react";
 
-const FormulaBar: React.FC<FormulaBarProps> = ({ 
-  value, 
-  onChange, 
-  selectedCell, 
-  formulaText, 
-  onCellSelect 
+interface FormulaBarProps {
+  value: string;
+  onChange: (value: string) => void;
+  selectedCell: string;
+  formulaText: string | null;
+  onCellSelect: (cell: string) => void;
+}
+
+const FormulaBar: React.FC<FormulaBarProps> = ({
+  value,
+  onChange,
+  selectedCell,
+  formulaText,
+  onCellSelect,
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const cellInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const cellInputRef = useRef<HTMLInputElement | null>(null);
   const [cellInputValue, setCellInputValue] = useState<string>(selectedCell);
 
   useEffect(() => {
@@ -21,22 +28,22 @@ const FormulaBar: React.FC<FormulaBarProps> = ({
       inputRef.current.value = formulaText;
       inputRef.current.focus();
       // Place cursor between the parentheses
-      const cursorPos = formulaText.indexOf('(') + 1;
+      const cursorPos = formulaText.indexOf("(") + 1;
       inputRef.current.setSelectionRange(cursorPos, cursorPos);
     }
   }, [formulaText]);
 
-  const handleCellInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+  const handleCellInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value.toUpperCase();
     setCellInputValue(newValue);
-    
+
     // Only update selection if it's a valid cell reference
     if (/^[A-Z]+[1-9][0-9]*$/.test(newValue)) {
       onCellSelect(newValue);
     }
   };
 
-  const handleCellInputBlur = (): void => {
+  const handleCellInputBlur = () => {
     // Reset to selected cell if invalid input
     if (!/^[A-Z]+[1-9][0-9]*$/.test(cellInputValue)) {
       setCellInputValue(selectedCell);
@@ -60,15 +67,15 @@ const FormulaBar: React.FC<FormulaBarProps> = ({
           type="text"
           className="w-full p-1 border border-gray-300 rounded text-sm"
           value={value}
-          onChange={(e) => onChange(selectedCell, e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           placeholder="Enter value or formula (e.g., =SUM(A1:B2))"
         />
       </div>
       <div className="formula-help text-xs text-gray-500 flex-none">
-        {value?.startsWith('=') ? 'Formula Mode' : 'Value Mode'}
+        {value?.startsWith("=") ? "Formula Mode" : "Value Mode"}
       </div>
     </div>
   );
 };
 
-export default FormulaBar; 
+export default FormulaBar;

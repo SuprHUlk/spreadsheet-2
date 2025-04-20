@@ -1,59 +1,84 @@
-import React, { useEffect, useRef } from 'react';
-import { ContextMenuProps } from '../types';
+import React, { useEffect, useRef } from "react";
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ 
-  x, 
-  y, 
-  onClose, 
-  onAddRow, 
-  onDeleteRow, 
-  onAddColumn, 
-  onDeleteColumn 
+interface ContextMenuProps {
+  x: number;
+  y: number;
+  onClose: () => void;
+  onAddRow?: () => void;
+  onDeleteRow?: () => void;
+  onAddColumn?: () => void;
+  onDeleteColumn?: () => void;
+}
+
+const ContextMenu: React.FC<ContextMenuProps> = ({
+  x,
+  y,
+  onClose,
+  onAddRow,
+  onDeleteRow,
+  onAddColumn,
+  onDeleteColumn,
 }) => {
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent): void => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
   return (
-    <div 
+    <div
       ref={menuRef}
       className="context-menu"
-      style={{ 
+      style={{
         top: y,
         left: x,
       }}
     >
       <div className="context-menu-group">
-        <button 
+        <button
           className="context-menu-item"
           onClick={() => {
-            onAddRow();
+            onAddRow && onAddRow();
             onClose();
           }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M5 12h14"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M12 5v14M5 12h14" />
           </svg>
           Insert Row Below
         </button>
-        <button 
+        <button
           className="context-menu-item"
           onClick={() => {
-            onDeleteRow();
+            onDeleteRow && onDeleteRow();
             onClose();
           }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M5 12h14" />
           </svg>
           Delete Row
         </button>
@@ -62,27 +87,43 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       <div className="context-menu-separator" />
 
       <div className="context-menu-group">
-        <button 
+        <button
           className="context-menu-item"
           onClick={() => {
-            onAddColumn();
+            onAddColumn && onAddColumn();
             onClose();
           }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M5 12h14"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M12 5v14M5 12h14" />
           </svg>
           Insert Column Right
         </button>
-        <button 
+        <button
           className="context-menu-item"
           onClick={() => {
-            onDeleteColumn();
+            onDeleteColumn && onDeleteColumn();
             onClose();
           }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M5 12h14" />
           </svg>
           Delete Column
         </button>
@@ -91,4 +132,4 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   );
 };
 
-export default ContextMenu; 
+export default ContextMenu;

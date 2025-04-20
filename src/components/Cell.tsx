@@ -1,8 +1,41 @@
-import React, { useState, useRef, useEffect, useCallback, KeyboardEvent, MouseEvent, ChangeEvent } from 'react';
-import { CellProps } from '../types';
-import ContextMenu from './ContextMenu';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import ContextMenu from "./ContextMenu";
 
-interface ContextMenuState {
+interface CellProps {
+  value: string;
+  displayValue: string;
+  onChange: (value: string) => void;
+  onSelect: (e: React.MouseEvent) => void;
+  onMouseDown: (e: React.MouseEvent) => void;
+  onMouseMove: (name: string) => void;
+  isSelected: string;
+  name: string;
+  styles?: {
+    fontWeight?: string;
+    fontStyle?: string;
+    fontSize?: string;
+    color?: string;
+    fontFamily?: string;
+    textDecoration?: string;
+    textAlign?: string;
+  };
+  onDragStart?: (name: string) => void;
+  onDragEnd?: () => void;
+  onFillDragStart?: (name: string) => void;
+  onFillDragMove?: (e: React.MouseEvent) => void;
+  onFillDragEnd?: () => void;
+  onAddRow?: () => void;
+  onDeleteRow?: () => void;
+  onAddColumn?: () => void;
+  onDeleteColumn?: () => void;
+  onTabNavigation: (
+    name: string,
+    isShiftKey: boolean,
+    isEnterKey?: boolean
+  ) => void;
+}
+
+interface ContextMenuPosition {
   x: number;
   y: number;
 }
@@ -26,44 +59,49 @@ const Cell: React.FC<CellProps> = ({
   onDeleteRow,
   onAddColumn,
   onDeleteColumn,
-  onTabNavigation
+  onTabNavigation,
 }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isFillDragging, setIsFillDragging] = useState<boolean>(false);
-  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-  const cellRef = useRef<HTMLTableCellElement>(null);
-  const fillHandleRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenuPosition | null>(
+    null
+  );
+  const cellRef = useRef<HTMLTableCellElement | null>(null);
+  const fillHandleRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Add keyboard event listener for the document
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if focus is on an input, select, or textarea element
-      if (e.target instanceof HTMLElement && (
-          e.target.tagName === 'INPUT' || 
-          e.target.tagName === 'SELECT' || 
-          e.target.tagName === 'TEXTAREA' ||
-          e.target.closest('.toolbar') ||
-          e.target.closest('.formula-bar'))) {
+      if (
+        e.target instanceof Element &&
+        (e.target.tagName === "INPUT" ||
+          e.target.tagName === "SELECT" ||
+          e.target.tagName === "TEXTAREA" ||
+          e.target.closest(".toolbar") ||
+          e.target.closest(".formula-bar"))
+      ) {
         return;
       }
 
       // Only handle keypress if this cell is primary selected and not already editing
-      if (isSelected?.includes('primary') && !isEditing) {
+      if (isSelected?.includes("primary") && !isEditing) {
         // Handle tab navigation
-        if (e.key === 'Tab') {
+        if (e.key === "Tab") {
           e.preventDefault();
           onTabNavigation(name, e.shiftKey);
           return;
         }
-        
+
         // Handle Enter key for navigation
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
           e.preventDefault();
           // Move to the cell below
-          const [col, row] = name.match(/([A-Z]+)(\d+)/)?.slice(1) || [];
-          if (col && row) {
+          const match = name.match(/([A-Z]+)(\d+)/);
+          if (match) {
+            const [_, col, row] = match;
             const nextCellName = `${col}${parseInt(row) + 1}`;
             onTabNavigation(nextCellName, false, true);
           }
@@ -71,31 +109,31 @@ const Cell: React.FC<CellProps> = ({
         }
 
         // If it's a printable character or special keys like backspace/delete
-        if (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Delete') {
+        if (e.key.length === 1 || e.key === "Backspace" || e.key === "Delete") {
           setIsEditing(true);
-          
+
           // For printable characters, we want to start fresh with just that character
           if (e.key.length === 1) {
             // Start with the character that was pressed
             onChange(e.key);
           } else {
             // For backspace/delete, we want to start with empty value
-            onChange('');
+            onChange("");
           }
-          
+
           e.preventDefault();
         }
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown as any);
-    return () => document.removeEventListener('keydown', handleKeyDown as any);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isSelected, isEditing, onChange, name, onTabNavigation]);
 
   useEffect(() => {
     if (isSelected && isEditing && inputRef.current) {
       inputRef.current.focus();
-      
+
       // Place cursor at the end of the text
       if (inputRef.current.value.length > 0) {
         inputRef.current.setSelectionRange(
@@ -114,33 +152,40 @@ const Cell: React.FC<CellProps> = ({
     setIsEditing(false);
   };
 
-  const handleContextMenu = (e: MouseEvent): void => {
+  const handleContextMenu = (e: React.MouseEvent): void => {
     e.preventDefault();
     setContextMenu({
       x: e.clientX,
-      y: e.clientY
+      y: e.clientY,
     });
   };
 
-  const handleCellMouseDown = useCallback((e: MouseEvent): void => {
-    if (e.button === 0) { // Left click only
-      onSelect(e);
-      if (!isEditing) {
-        setIsDragging(true);
-        onDragStart?.(name);
+  const handleCellMouseDown = useCallback(
+    (e: React.MouseEvent): void => {
+      if (e.button === 0) {
+        // Left click only
+        onSelect(e);
+        if (!isEditing) {
+          setIsDragging(true);
+          onDragStart?.(name);
+        }
       }
-    }
-  }, [isEditing, name, onSelect, onDragStart]);
+    },
+    [isEditing, name, onSelect, onDragStart]
+  );
 
-  const handleCellMouseMove = useCallback((e: MouseEvent): void => {
-    if (isDragging) {
-      e.preventDefault();
-      onMouseMove?.(name);
-    } else if (isFillDragging) {
-      e.preventDefault();
-      onFillDragMove?.(e);
-    }
-  }, [isDragging, isFillDragging, name, onMouseMove, onFillDragMove]);
+  const handleCellMouseMove = useCallback(
+    (e: React.MouseEvent | MouseEvent): void => {
+      if (isDragging) {
+        e.preventDefault();
+        onMouseMove?.(name);
+      } else if (isFillDragging && "clientX" in e) {
+        e.preventDefault();
+        onFillDragMove?.(e as React.MouseEvent);
+      }
+    },
+    [isDragging, isFillDragging, name, onMouseMove, onFillDragMove]
+  );
 
   const handleCellMouseUp = useCallback((): void => {
     if (isDragging) {
@@ -153,25 +198,29 @@ const Cell: React.FC<CellProps> = ({
     }
   }, [isDragging, isFillDragging, onDragEnd, onFillDragEnd]);
 
-  const handleFillHandleMouseDown = useCallback((e: MouseEvent): void => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFillDragging(true);
-    onFillDragStart?.(name);
-  }, [name, onFillDragStart]);
+  const handleFillHandleMouseDown = useCallback(
+    (e: React.MouseEvent): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsFillDragging(true);
+      onFillDragStart?.(name);
+    },
+    [name, onFillDragStart]
+  );
 
   // Handle tab key navigation for input element
-  const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Tab') {
+  const handleInputKeyDown = (e: React.KeyboardEvent): void => {
+    if (e.key === "Tab") {
       e.preventDefault(); // Prevent default tab behavior
       setIsEditing(false);
       onTabNavigation(name, e.shiftKey);
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       setIsEditing(false);
       // Move to the cell below
-      const [col, row] = name.match(/([A-Z]+)(\d+)/)?.slice(1) || [];
-      if (col && row) {
+      const match = name.match(/([A-Z]+)(\d+)/);
+      if (match) {
+        const [_, col, row] = match;
         const nextCellName = `${col}${parseInt(row) + 1}`;
         onTabNavigation(nextCellName, false, true);
       }
@@ -180,70 +229,83 @@ const Cell: React.FC<CellProps> = ({
 
   useEffect(() => {
     if (isDragging || isFillDragging) {
-      document.addEventListener('mousemove', handleCellMouseMove as any);
-      document.addEventListener('mouseup', handleCellMouseUp);
+      document.addEventListener("mousemove", handleCellMouseMove);
+      document.addEventListener("mouseup", handleCellMouseUp);
 
       return () => {
-        document.removeEventListener('mousemove', handleCellMouseMove as any);
-        document.removeEventListener('mouseup', handleCellMouseUp);
+        document.removeEventListener("mousemove", handleCellMouseMove);
+        document.removeEventListener("mouseup", handleCellMouseUp);
       };
     }
   }, [isDragging, isFillDragging, handleCellMouseMove, handleCellMouseUp]);
 
   const cellStyle: React.CSSProperties = {
-    fontWeight: styles.bold ? 'bold' : 'normal',
-    fontStyle: styles.italic ? 'italic' : 'normal',
-    fontSize: styles.fontSize || '14px',
-    color: styles.color || '#000000',
-    fontFamily: styles.fontFamily || 'Arial',
-    textDecoration: styles.strikethrough ? 'line-through' : 'none',
-    textAlign: styles.textAlign || 'left',
-    position: 'relative'
+    fontWeight: styles.fontWeight || "normal",
+    fontStyle: styles.fontStyle || "normal",
+    fontSize: styles.fontSize || "14px",
+    color: styles.color || "#000000",
+    fontFamily: styles.fontFamily || "Arial",
+    textDecoration: styles.textDecoration || "none",
+    // textAlign: styles.textAlign || "left",
+    position: "relative",
   };
 
   return (
     <td
       ref={cellRef}
-      className={`cell border border-gray-300 px-2 py-1 ${isSelected} ${isDragging ? 'cell-dragging' : ''}`}
+      className={`cell border border-gray-300 px-2 py-1 ${isSelected} ${
+        isDragging ? "cell-dragging" : ""
+      }`}
       style={cellStyle}
       data-cell-name={name}
       onMouseDown={handleCellMouseDown}
-      onMouseMove={handleCellMouseMove}
+      onMouseMove={(e) => handleCellMouseMove(e)}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       draggable={false}
-      tabIndex={isSelected?.includes('primary') ? 0 : -1}
+      tabIndex={isSelected?.includes("primary") ? 0 : -1}
     >
       {isEditing ? (
         <input
           ref={inputRef}
           type="text"
           value={value}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleInputKeyDown}
           className="w-full h-full outline-none"
-          style={{ textAlign: styles.textAlign || 'left' }}
+          style={
+            {
+              // textAlign: styles.textAlign || "left",
+            }
+          }
           autoFocus
         />
       ) : (
-        <div className="w-full h-full min-h-[20px]" style={{ textAlign: styles.textAlign || 'left' }}>
+        <div
+          className="w-full h-full min-h-[20px]"
+          style={
+            {
+              // textAlign: styles.textAlign || "left",
+            }
+          }
+        >
           {displayValue}
         </div>
       )}
-      {isSelected?.includes('primary') && !isEditing && (
+      {isSelected?.includes("primary") && !isEditing && (
         <>
-          <div 
+          <div
             ref={fillHandleRef}
             className="fill-handle"
             onMouseDown={handleFillHandleMouseDown}
           />
           {isFillDragging && (
-            <div 
+            <div
               className="autofill-cover"
               style={{
                 top: fillHandleRef.current?.offsetTop || 0,
-                left: fillHandleRef.current?.offsetLeft || 0
+                left: fillHandleRef.current?.offsetLeft || 0,
               }}
             />
           )}
@@ -264,4 +326,4 @@ const Cell: React.FC<CellProps> = ({
   );
 };
 
-export default Cell; 
+export default Cell;
