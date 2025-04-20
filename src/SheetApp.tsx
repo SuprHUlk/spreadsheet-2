@@ -79,9 +79,7 @@ const SheetApp: React.FC = () => {
   const dispatch = useAppDispatch();
 
   // Get spreadsheet state from Redux
-  const { cells, cellStyles, undoStack, redoStack, lastSaved } = useAppSelector(
-    (state) => state.spreadsheet
-  );
+  const { cells, cellStyles } = useAppSelector((state) => state.spreadsheet);
 
   // Local state for UI elements
   const [numRows, setNumRows] = useState<number>(DEFAULT_ROWS);

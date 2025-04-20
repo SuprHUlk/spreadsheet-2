@@ -23,8 +23,8 @@ export interface CellStylesState {
 export interface SpreadsheetState {
   cells: CellsState;
   cellStyles: CellStylesState;
-  columnWidths: Record<number, number>;
-  rowHeights: Record<number, number>;
+  // columnWidths: Record<number, number>;
+  // rowHeights: Record<number, number>;
   undoStack: { cells: CellsState; cellStyles: CellStylesState }[];
   redoStack: { cells: CellsState; cellStyles: CellStylesState }[];
   lastSaved: Date | null;
@@ -34,8 +34,8 @@ export interface SpreadsheetState {
 const initialState: SpreadsheetState = {
   cells: {},
   cellStyles: {},
-  columnWidths: {},
-  rowHeights: {},
+  // columnWidths: {},
+  // rowHeights: {},
   undoStack: [],
   redoStack: [],
   lastSaved: null,
